@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -13,7 +12,7 @@ type Movie struct {
 	MovieId     string       `json:"movieId"`
 	Name        string       `json:"name"`
 	Genre       string       `json:"genre"`
-	ReleaseDate time.Time    `json:"releaseDate"`
+	ReleaseYear string       `json:"releaseDate"`
 	Director    string       `json:"director"`
 	MovieActors []MovieActor `json:"actors"`
 	Composer    string       `json:"composer"`
@@ -28,14 +27,14 @@ func (m *Movie) GoString() string {
     Id: %s,
 	Name: %s,
 	Genre: %s,
-    ReleaseDate: %s
+    ReleaseYear: %s
     Director: %s,
     Composer: %s
 }`,
 		m.MovieId,
 		m.Name,
 		m.Genre,
-		m.ReleaseDate,
+		m.ReleaseYear,
 		m.Director,
 		m.Composer,
 	)

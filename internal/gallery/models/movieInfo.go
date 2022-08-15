@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -10,13 +9,13 @@ import (
 // Movie holds data related to a movie in a format readable to the end user
 type MovieInfo struct {
 	gorm.Model
-	MovieId     string    `json:"movieId"`
-	Name        string    `json:"name"`
-	Genre       string    `json:"genre"`
-	ReleaseDate time.Time `json:"releaseDate"`
-	Director    string    `json:"director"`
-	Actors      []string  `json:"actors"`
-	Composer    string    `json:"composer"`
+	MovieId     string   `json:"movieId"`
+	Name        string   `json:"name"`
+	Genre       string   `json:"genre"`
+	ReleaseYear string   `json:"releaseDate"`
+	Director    string   `json:"director"`
+	Actors      []string `json:"actors"`
+	Composer    string   `json:"composer"`
 }
 
 // GoString implements the GoStringer interface so we can display the full struct during debugging
@@ -36,7 +35,7 @@ func (mi *MovieInfo) GoString() string {
     Id: %s,
 	Name: %s,
 	Genre: %s,
-    ReleaseDate: %s
+    ReleaseYear: %s
     Director: %s,
     Actors: %s,
     Composer: %s
@@ -44,7 +43,7 @@ func (mi *MovieInfo) GoString() string {
 		mi.MovieId,
 		mi.Name,
 		mi.Genre,
-		mi.ReleaseDate,
+		mi.ReleaseYear,
 		mi.Director,
 		actorListString,
 		mi.Composer,

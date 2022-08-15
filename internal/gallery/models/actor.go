@@ -9,8 +9,8 @@ import (
 // Actor holds data related to an actor
 type Actor struct {
 	gorm.Model
-	ActorId       string `json:"id"`
-	ActorName     string `json:"actorName"`
+	ActorId   string `json:"id"`
+	Name      string `json:"actorName"`
 }
 
 // GoString implements the GoStringer interface so we can display the full struct during debugging
@@ -20,9 +20,9 @@ func (a *Actor) GoString() string {
 	return fmt.Sprintf(`
 {
     ActorId: %s,
-	ActorName: %s,
+	Name: %s,
 }`,
 		a.ActorId,
-		a.ActorName,
+		a.Name,
 	)
 }

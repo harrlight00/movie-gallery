@@ -9,10 +9,10 @@ import (
 // MovieActor holds data related to an actors specific portrayal in a movie
 type MovieActor struct {
 	gorm.Model
-	MovieId		  uint   `json:"movieId"`
+	MovieId       uint   `json:"movieId"`
 	ActorId       string `json:"id"`
 	CharacterName string `json:"characterName"`
-    Actor         Actor  `json:"actor"`
+	Actor         Actor  `json:"actor"`
 }
 
 // GoString implements the GoStringer interface so we can display the full struct during debugging
