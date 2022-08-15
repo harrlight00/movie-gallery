@@ -11,7 +11,7 @@ import (
 // user wishes to query for. As all fields are optional, any omitted fields will not be queried
 // Results are limited to 10.
 func GetMovies(c *gin.Context) {
-	var movie models.Movie
+	var movie models.MovieInfo
 
 	if err := c.ShouldBindQuery(&movie); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -20,7 +20,7 @@ func GetMovies(c *gin.Context) {
 		return
 	}
 
-	res, err := getMovies(movie)
+	res, err := getMovies(&movie)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -34,23 +34,23 @@ func GetMovies(c *gin.Context) {
 // This function can be used for updating movies. This API will accept a request in the form
 // of the Movie struct defined in the models folder with any fields the user wishes to update
 func UpdateMovie(c *gin.Context) {
-	var movie models.Movie
+	var movie models.MovieInfo
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&movie); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	if movie.Id == nil {
+	if movie.MovieId == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Field Id needs to be present in update request",
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, movie)
 }
 
 func GetMovie(c *gin.Context) {
@@ -65,27 +65,27 @@ func GetMovie(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, nil)
 }
 
 // This function can be used for updating movies. This API will accept a request in the form
 // of the Movie struct defined in the models folder with any fields the user wishes to update
-func UpdateMovie(c *gin.Context) {
-	var movie models.Movie
+func CreateMovie(c *gin.Context) {
+	var movie models.MovieInfo
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&movie); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	if movie.Id == nil {
+	if movie.MovieId != "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Cannot update without ID field",
+			"error": "Cannot create with ID field defined",
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, movie)
 }

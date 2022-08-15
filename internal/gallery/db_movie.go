@@ -1,12 +1,12 @@
-package gallery;
+package gallery
 
 import (
-    models "github.com/harrlight00/movie-gallery/internal/gallery/models"
+	models "github.com/harrlight00/movie-gallery/internal/gallery/models"
 )
 
-func getMovies(movie *models.Movie) error {
-    var movies []models.Movie
-    if result := db.Where("Name = ?", movie.Name).Find(&movies); result.Error != nil {
+func getMovies(movieInfo *models.MovieInfo) ([]models.Movie, error) {
+	var movies []models.Movie
+	if result := db.Where("Name = ?", movieInfo.Name).Find(&movies); result.Error != nil {
 		return nil, result.Error
 	}
 	return movies, nil

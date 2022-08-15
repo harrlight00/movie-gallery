@@ -6,23 +6,27 @@ import (
 	"gorm.io/gorm"
 )
 
-// Actor holds data related to an actor
-type Actor struct {
+// MovieActor holds data related to an actors specific portrayal in a movie
+type MovieActor struct {
 	gorm.Model
+	MovieId		  uint   `json:"movieId"`
 	ActorId       string `json:"id"`
-	ActorName     string `json:"actorName"`
+	CharacterName string `json:"characterName"`
+    Actor         Actor  `json:"actor"`
 }
 
 // GoString implements the GoStringer interface so we can display the full struct during debugging
 // usage: fmt.Printf("%#v", i)
 // ensure that i is a pointer, so might need to do &i in some cases
-func (a *Actor) GoString() string {
+func (ma *MovieActor) GoString() string {
 	return fmt.Sprintf(`
 {
+    MovieId: %s,
     ActorId: %s,
-	ActorName: %s,
+	CharacterName: %s,
 }`,
-		a.ActorId,
-		a.ActorName,
+		ma.MovieId,
+		ma.ActorId,
+		ma.CharacterName,
 	)
 }
