@@ -2,17 +2,14 @@ package models
 
 import (
 	"fmt"
-
-	"gorm.io/gorm"
 )
 
-// Movie holds data related to a movie in a format readable to the end user
+// MovieInfo holds data related to a movie in a format readable to the end user
 type MovieInfo struct {
-	gorm.Model
 	MovieId     string   `json:"movieId"`
 	Name        string   `json:"name"`
 	Genre       string   `json:"genre"`
-	ReleaseYear string   `json:"releaseDate"`
+	ReleaseYear string   `json:"releaseYear"`
 	Director    string   `json:"director"`
 	Actors      []string `json:"actors"`
 	Composer    string   `json:"composer"`

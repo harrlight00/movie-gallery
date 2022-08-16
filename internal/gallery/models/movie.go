@@ -9,12 +9,12 @@ import (
 // Movie holds data related to a movie
 type Movie struct {
 	gorm.Model
-	MovieId     string       `json:"movieId"`
+	Id          uint         `json:"-" gorm:"primary_key"`
+	MovieId     string       `json:"movieId" gorm:"size:128"`
 	Name        string       `json:"name"`
 	Genre       string       `json:"genre"`
-	ReleaseYear string       `json:"releaseDate"`
+	ReleaseYear string       `json:"releaseYear"`
 	Director    string       `json:"director"`
-	MovieActors []MovieActor `json:"actors"`
 	Composer    string       `json:"composer"`
 }
 
@@ -24,7 +24,7 @@ type Movie struct {
 func (m *Movie) GoString() string {
 	return fmt.Sprintf(`
 {
-    Id: %s,
+    MovieId: %s,
 	Name: %s,
 	Genre: %s,
     ReleaseYear: %s

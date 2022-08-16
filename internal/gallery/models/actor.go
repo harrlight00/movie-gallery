@@ -7,10 +7,11 @@ import (
 )
 
 // Actor holds data related to an actor
+// Note: we treat actor name as unique in this implementation
 type Actor struct {
 	gorm.Model
-	ActorId   string `json:"id"`
-	Name      string `json:"actorName"`
+	Id		  uint   `json:"-" gorm:"primary_key"`
+	Name      string `json:"actorName" gorm:"index:idx_name,unique"`
 }
 
 // GoString implements the GoStringer interface so we can display the full struct during debugging
@@ -19,10 +20,8 @@ type Actor struct {
 func (a *Actor) GoString() string {
 	return fmt.Sprintf(`
 {
-    ActorId: %s,
 	Name: %s,
 }`,
-		a.ActorId,
 		a.Name,
 	)
 }

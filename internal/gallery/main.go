@@ -43,9 +43,9 @@ func StartServer() {
 
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
-	r.GET("/movies", GetMovie)
+	r.GET("/movies", GetMovies)
 	r.POST("/movies", CreateMovie)
-	r.GET("/movies/:id", GetMovies)
+	r.GET("/movies/:id", GetMovie)
 	r.POST("/movies/:id", UpdateMovie)
 
 	if err := r.Run("localhost:8080"); err != nil {
