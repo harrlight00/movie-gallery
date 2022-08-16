@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Database function used for searching movies with any qualifiers provided as a 
+// Database function used for searching movies with any qualifiers provided as a
 // MovieInfo object. Will only return up to 20 movies until pagination is implemented.
 // Note: currently getMovies only accepts searching by one actor at a time
 // TODO: add pagination
@@ -49,13 +49,13 @@ func getMovies(movieInfo *models.MovieInfo) ([]models.MovieInfo, error) {
 		values = append(values, movieInfo.Actors[0])
 	}
 
-	if (len(fields) != 0) {
+	if len(fields) != 0 {
 		query += " WHERE " + strings.Join(fields, " AND ")
 	}
 
 	query += " LIMIT 20;"
 
-	rows, err := db.Raw(query, values...).Rows();
+	rows, err := db.Raw(query, values...).Rows()
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func getMovies(movieInfo *models.MovieInfo) ([]models.MovieInfo, error) {
 	return movies, nil
 }
 
-// Database function used for inserting a new movie. The function will insert the movie, 
+// Database function used for inserting a new movie. The function will insert the movie,
 // insert any new actors, and insert a movie_actor entry for each new movie_actor combo.
 func insertMovie(movieInfo *models.MovieInfo) error {
 	// Convert MovieInfo to Movie
@@ -85,7 +85,7 @@ func insertMovie(movieInfo *models.MovieInfo) error {
 
 	// Create movie (without actors)
 	if result := db.Select("MovieId", "Name", "Genre", "ReleaseYear", "Director", "Composer").
-			Create(&movie); result.Error != nil {
+		Create(&movie); result.Error != nil {
 		return result.Error
 	}
 
@@ -94,7 +94,7 @@ func insertMovie(movieInfo *models.MovieInfo) error {
 		var actor models.Actor
 		// Check if Actor currently exists and create actor if not
 		if result := db.Select("Id", "Name").
-				FirstOrCreate(&actor, models.Actor{Name: actorName}); result.Error != nil {
+			FirstOrCreate(&actor, models.Actor{Name: actorName}); result.Error != nil {
 			return result.Error
 		}
 
@@ -108,24 +108,41 @@ func insertMovie(movieInfo *models.MovieInfo) error {
 	return nil
 }
 
+// Database function used to grab a movie using a MovieId
+func getMovie(movieId string) (models.MovieInfo, error) {
+	var movie models.Movie
+	if result := db.Select("MovieId", "Name", "Genre", "ReleaseYear", "Director", "Composer").
+		Where(&models.Movie{MovieId: movieId}).First(&movie); result.Error != nil {
+		return models.MovieInfo{}, result.Error
+	}
+
+	// Convert scanned movie into movieInfo
+	movieInfo := createMovieInfoFromMovie(movie)
+
+	// Fill in movieInfo.actors
+	getMovieActors(&movieInfo)
+
+	return movieInfo, nil
+}
+
 // Database function used to fill in actor information for a MovieInfo object
 func getMovieActors(movieInfo *models.MovieInfo) error {
 	// Search MovieActors table
-    query := `SELECT DISTINCT a.name FROM movie_actors ma INNER JOIN movies m ON m.id=ma.movie_db_id
+	query := `SELECT DISTINCT a.name FROM movie_actors ma INNER JOIN movies m ON m.id=ma.movie_db_id
         INNER JOIN actors a ON a.id=ma.actor_db_id WHERE m.movie_id = ?`
 
-    rows, err := db.Raw(query, movieInfo.MovieId).Rows();
-    if err != nil {
-        return err
-    }
-    defer rows.Close()
-    for rows.Next() {
-        var actor models.Actor
-        db.ScanRows(rows, &actor)
+	rows, err := db.Raw(query, movieInfo.MovieId).Rows()
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var actor models.Actor
+		db.ScanRows(rows, &actor)
 
 		// Update actors value with each actor
 		movieInfo.Actors = append(movieInfo.Actors, actor.Name)
-    }
+	}
 
 	return nil
 }

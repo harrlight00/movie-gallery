@@ -10,8 +10,8 @@ import (
 // Note: we treat actor name as unique in this implementation
 type Actor struct {
 	gorm.Model
-	Id		  uint   `json:"-" gorm:"primary_key"`
-	Name      string `json:"actorName" gorm:"index:idx_name,unique"`
+	Id   uint   `json:"-" gorm:"primary_key"`
+	Name string `json:"actorName" gorm:"index:idx_name,unique"`
 }
 
 // GoString implements the GoStringer interface so we can display the full struct during debugging

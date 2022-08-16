@@ -99,7 +99,7 @@ func CreateMovie(c *gin.Context) {
 
 func GetMovie(c *gin.Context) {
 	var param struct {
-		Name string `uri:"id"`
+		MovieId string `uri:"id"`
 	}
 
 	if err := c.ShouldBindUri(&param); err != nil {
@@ -109,7 +109,22 @@ func GetMovie(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, nil)
+	if !isValidUUID(param.MovieId) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Please input a valid MovieID",
+		})
+		return
+	}
+
+	movieInfo, err := getMovie(param.MovieId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, movieInfo)
 }
 
 // This function can be used for updating movies. This API will accept a request in the form

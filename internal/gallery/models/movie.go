@@ -9,13 +9,13 @@ import (
 // Movie holds data related to a movie
 type Movie struct {
 	gorm.Model
-	Id          uint         `json:"-" gorm:"primary_key"`
-	MovieId     string       `json:"movieId" gorm:"size:128"`
-	Name        string       `json:"name"`
-	Genre       string       `json:"genre"`
-	ReleaseYear string       `json:"releaseYear"`
-	Director    string       `json:"director"`
-	Composer    string       `json:"composer"`
+	Id          uint   `json:"-" gorm:"primary_key"`
+	MovieId     string `json:"movieId" gorm:"size:128"`
+	Name        string `json:"name"`
+	Genre       string `json:"genre"`
+	ReleaseYear string `json:"releaseYear"`
+	Director    string `json:"director"`
+	Composer    string `json:"composer"`
 }
 
 // GoString implements the GoStringer interface so we can display the full struct during debugging

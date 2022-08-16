@@ -11,8 +11,8 @@ type MovieInfo struct {
 	Genre       string   `json:"genre"`
 	ReleaseYear string   `json:"releaseYear"`
 	Director    string   `json:"director"`
-	Actors      []string `json:"actors"`
 	Composer    string   `json:"composer"`
+	Actors      []string `json:"actors"`
 }
 
 // GoString implements the GoStringer interface so we can display the full struct during debugging
