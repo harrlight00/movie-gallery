@@ -11,9 +11,9 @@ type MovieActor struct {
 	gorm.Model
 	Id        uint  `json:"-" gorm:"primary_key"`
 	Movie     Movie `json:"movie" gorm:"foreignKey:MovieDbId;references:id"`
-	MovieDbId uint  `json:"-" gorm:"index"`
+	MovieDbId uint  `json:"-" gorm:"index:idx_movie_db_id;uniqueIndex:idx_ids"`
 	Actor     Actor `json:"actor" gorm:"foreignKey:ActorDbId;references:id"`
-	ActorDbId uint  `json:"-" gorm:"index"`
+	ActorDbId uint  `json:"-" gorm:"index:idx_actor_db_id;uniqueIndex:idx_ids"`
 }
 
 // GoString implements the GoStringer interface so we can display the full struct during debugging
@@ -22,10 +22,10 @@ type MovieActor struct {
 func (ma *MovieActor) GoString() string {
 	return fmt.Sprintf(`
 {
-    Movie: %s,
-	Actor": %s,
+    MovieDbId: %s,
+	ActorDbId": %s,
 }`,
-		ma.Movie.GoString(),
-		ma.Actor.GoString(),
+		ma.MovieDbId,
+		ma.ActorDbId,
 	)
 }

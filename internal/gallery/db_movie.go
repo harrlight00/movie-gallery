@@ -1,16 +1,17 @@
 package gallery
 
 import (
+	"errors"
 	models "github.com/harrlight00/movie-gallery/internal/gallery/models"
+	"gorm.io/gorm/clause"
 	"strings"
 )
 
 // Database function used for searching movies with any qualifiers provided as a
 // MovieInfo object. Will only return up to 20 movies until pagination is implemented.
-// Note: currently getMovies only accepts searching by one actor at a time
 // TODO: add pagination
 func getMovies(movieInfo *models.MovieInfo) ([]models.MovieInfo, error) {
-	var movies []models.MovieInfo
+	movies := make([]models.MovieInfo, 0)
 
 	// Write query based on which fields are included
 	query := `SELECT DISTINCT m.movie_id, m.name, m.genre, m.release_year, m.director, 
@@ -45,8 +46,12 @@ func getMovies(movieInfo *models.MovieInfo) ([]models.MovieInfo, error) {
 		values = append(values, movieInfo.Composer)
 	}
 	if movieInfo.Actors != nil && len(movieInfo.Actors) != 0 {
-		fields = append(fields, "a.name = ?")
-		values = append(values, movieInfo.Actors[0])
+		for _, actor := range movieInfo.Actors {
+			fields = append(fields, "EXISTS(SELECT * FROM movie_actors _ma "+
+				"INNER JOIN actors _a ON _a.id=_ma.actor_db_id "+
+				"WHERE m.id = _ma.movie_db_id AND _a.name = ?)")
+			values = append(values, actor)
+		}
 	}
 
 	if len(fields) != 0 {
@@ -80,8 +85,8 @@ func getMovies(movieInfo *models.MovieInfo) ([]models.MovieInfo, error) {
 // insert any new actors, and insert a movie_actor entry for each new movie_actor combo.
 func insertMovie(movieInfo *models.MovieInfo) error {
 	// Convert MovieInfo to Movie
+	movieInfo.MovieId = createUUID()
 	movie := createMovieFromMovieInfo(*movieInfo)
-	movie.MovieId = createUUID()
 
 	// Create movie (without actors)
 	if result := db.Select("MovieId", "Name", "Genre", "ReleaseYear", "Director", "Composer").
@@ -111,7 +116,7 @@ func insertMovie(movieInfo *models.MovieInfo) error {
 // Database function used to grab a movie using a MovieId
 func getMovie(movieId string) (models.MovieInfo, error) {
 	var movie models.Movie
-	if result := db.Select("MovieId", "Name", "Genre", "ReleaseYear", "Director", "Composer").
+	if result := db.Select("Id", "MovieId", "Name", "Genre", "ReleaseYear", "Director", "Composer").
 		Where(&models.Movie{MovieId: movieId}).First(&movie); result.Error != nil {
 		return models.MovieInfo{}, result.Error
 	}
@@ -123,6 +128,60 @@ func getMovie(movieId string) (models.MovieInfo, error) {
 	getMovieActors(&movieInfo)
 
 	return movieInfo, nil
+}
+
+// Database function used for updating a current movie. The function will insert the movie,
+// insert any new actors, and insert a movie_actor entry for each new movie_actor combo.
+// Note: this function does not support deleting existing actors from a movie
+func updateMovie(movieInfo *models.MovieInfo) error {
+	// Convert MovieInfo to Movie
+	movie := createMovieFromMovieInfo(*movieInfo)
+
+	// Only update fields that have been specified
+	fieldsToUpdate := make([]string, 0)
+	if movieInfo.Name != "" {
+		fieldsToUpdate = append(fieldsToUpdate, "Name")
+	}
+	if movieInfo.Genre != "" {
+		fieldsToUpdate = append(fieldsToUpdate, "Genre")
+	}
+	if movieInfo.ReleaseYear != "" {
+		fieldsToUpdate = append(fieldsToUpdate, "ReleaseYear")
+	}
+	if movieInfo.Director != "" {
+		fieldsToUpdate = append(fieldsToUpdate, "Director")
+	}
+	if movieInfo.Composer != "" {
+		fieldsToUpdate = append(fieldsToUpdate, "Composer")
+	}
+
+	if (len(fieldsToUpdate)) == 0 {
+		return errors.New("No fields to update")
+	}
+
+	// Update movie (without actors)
+	if result := db.Where("movie_id = ?", movie.MovieId).Updates(&movie); result.Error != nil {
+		return result.Error
+	}
+
+	// Update actors
+	for _, actorName := range movieInfo.Actors {
+		var actor models.Actor
+		// Check if Actor currently exists and create actor if not
+		if result := db.Select("Id", "Name").
+			FirstOrCreate(&actor, models.Actor{Name: actorName}); result.Error != nil {
+			return result.Error
+		}
+
+		// Insert new MovieActor entry (if needed) with new/existing actor and new movie
+		movieActor := models.MovieActor{MovieDbId: movie.Id, ActorDbId: actor.Id}
+		if result := db.Clauses(clause.Insert{Modifier: "IGNORE"}).Select("MovieDbId", "ActorDbId").
+			Create(&movieActor); result.Error != nil {
+			return result.Error
+		}
+	}
+
+	return nil
 }
 
 // Database function used to fill in actor information for a MovieInfo object

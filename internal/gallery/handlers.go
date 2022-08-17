@@ -20,7 +20,7 @@ func GetMovies(c *gin.Context) {
 		return
 	}
 
-	res, err := getMovies(&movie)
+	movies, err := getMovies(&movie)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -28,7 +28,7 @@ func GetMovies(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, movies)
 }
 
 // This function can be used for updating movies. This API will accept a request in the form
@@ -94,7 +94,7 @@ func CreateMovie(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusOK, movieInfo)
 }
 
 func GetMovie(c *gin.Context) {
@@ -130,21 +130,58 @@ func GetMovie(c *gin.Context) {
 // This function can be used for updating movies. This API will accept a request in the form
 // of the Movie struct defined in the models folder with any fields the user wishes to update
 func UpdateMovie(c *gin.Context) {
-	var movie models.MovieInfo
+	var movieInfo models.MovieInfo
+	var param struct {
+		MovieId string `uri:"id"`
+	}
 
-	if err := c.ShouldBindJSON(&movie); err != nil {
+	if err := c.ShouldBindUri(&param); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	if movie.MovieId == "" {
+	if err := c.ShouldBindJSON(&movieInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Field Id needs to be present in update request",
+			"error": err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, movie)
+	if !isValidUUID(param.MovieId) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Please input a valid MovieID",
+		})
+		return
+	}
+
+	if movieInfo.MovieId != "" && movieInfo.MovieId != param.MovieId {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Please input matching MovieIDs in the URI and body",
+		})
+		return
+	}
+
+	dbMovie, validationErr := getMovie(param.MovieId)
+	if validationErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "MovieID does not map to an existing movie",
+		})
+		return
+	}
+
+	// Set movieId and Id on the movieInfo object
+	movieInfo.Id = dbMovie.Id
+	movieInfo.MovieId = param.MovieId
+
+	err := updateMovie(&movieInfo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, movieInfo)
 }

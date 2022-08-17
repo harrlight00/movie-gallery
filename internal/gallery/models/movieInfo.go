@@ -6,6 +6,7 @@ import (
 
 // MovieInfo holds data related to a movie in a format readable to the end user
 type MovieInfo struct {
+	Id          uint     `json:"-"`
 	MovieId     string   `json:"movieId"`
 	Name        string   `json:"name"`
 	Genre       string   `json:"genre"`
@@ -30,6 +31,7 @@ func (mi *MovieInfo) GoString() string {
 	return fmt.Sprintf(`
 {
     Id: %s,
+	MovieId: %s,
 	Name: %s,
 	Genre: %s,
     ReleaseYear: %s
@@ -37,6 +39,7 @@ func (mi *MovieInfo) GoString() string {
     Actors: %s,
     Composer: %s
 }`,
+		mi.Id,
 		mi.MovieId,
 		mi.Name,
 		mi.Genre,
