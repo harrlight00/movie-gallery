@@ -68,9 +68,6 @@ func setupTestCase(t *testing.T) func(t *testing.T) {
 
 	assert := assert.New(t)
 
-	//mockDb, err := sqlite.Open("sqlite3", "file:../testfiles/test.db?cache=shared")
-	//assert.Nil(err)
-
 	gormDb, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 	assert.Nil(err)
 
