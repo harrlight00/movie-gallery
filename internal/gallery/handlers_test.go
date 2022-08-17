@@ -8,17 +8,31 @@ import (
 	"testing"
 )
 
+func TestGenerateTokenHandler(t *testing.T) {
+	assert := assert.New(t)
+	teardownTestCase := setupTestCase(t)
+	defer teardownTestCase(t)
+
+	var tokenResponse TokenResponse
+
+	t.Log("Test GenerateToken")
+	responseData, responseCode := sendHttpRequest(t, r, nil, "POST", "/token")
+	err := json.Unmarshal(responseData, &tokenResponse)
+	assert.Nil(err)
+
+	assert.Equal(http.StatusOK, responseCode, "200 response")
+	assert.True(len(tokenResponse.Token) > 0, "Non-empty token created")
+}
+
 func TestGetMoviesHandler(t *testing.T) {
 	assert := assert.New(t)
 	teardownTestCase := setupTestCase(t)
 	defer teardownTestCase(t)
 
-	r := SetUpRouter()
-
 	var actualMovies []models.MovieInfo
 
 	t.Log("Test GetMovies by name")
-	responseData, responseCode := sendHttpRequest(t, r, models.MovieInfo{Name: "Tenet"}, "GET", "/movies")
+	responseData, responseCode := sendHttpRequest(t, r, models.MovieInfo{Name: "Tenet"}, "GET", "/api/movies")
 	err := json.Unmarshal(responseData, &actualMovies)
 	assert.Nil(err)
 
@@ -32,14 +46,12 @@ func TestCreateMovieHandler(t *testing.T) {
 	teardownTestCase := setupTestCase(t)
 	defer teardownTestCase(t)
 
-	r := SetUpRouter()
-
 	var actualMovie models.MovieInfo
 
 	// darkKnightMovie is defined in main_test.go
 	t.Log("Test InsertMovie success")
 	// Marshal struct into JSON request data
-	responseData, responseCode := sendHttpRequest(t, r, darkKnightMovie, "POST", "/movies")
+	responseData, responseCode := sendHttpRequest(t, r, darkKnightMovie, "POST", "/api/movies")
 	err := json.Unmarshal(responseData, &actualMovie)
 	assert.Nil(err)
 
@@ -50,7 +62,7 @@ func TestCreateMovieHandler(t *testing.T) {
 	t.Log("Test InsertMovie fail with MovieId defined")
 	darkKnightMovie.MovieId = "test_movie_id"
 	// Marshal struct into JSON request data
-	responseData, responseCode = sendHttpRequest(t, r, darkKnightMovie, "POST", "/movies")
+	responseData, responseCode = sendHttpRequest(t, r, darkKnightMovie, "POST", "/api/movies")
 	darkKnightMovie.MovieId = ""
 
 	assert.Equal(http.StatusBadRequest, responseCode, "400 response")
@@ -60,7 +72,7 @@ func TestCreateMovieHandler(t *testing.T) {
 	t.Log("Test InsertMovie fail with missing field")
 	darkKnightMovie.Name = ""
 	// Marshal struct into JSON request data
-	responseData, responseCode = sendHttpRequest(t, r, darkKnightMovie, "POST", "/movies")
+	responseData, responseCode = sendHttpRequest(t, r, darkKnightMovie, "POST", "/api/movies")
 	darkKnightMovie.Name = "The Dark Knight"
 
 	assert.Equal(http.StatusBadRequest, responseCode, "400 response")
@@ -70,7 +82,7 @@ func TestCreateMovieHandler(t *testing.T) {
 	t.Log("Test InsertMovie fail with missing actors")
 	darkKnightMovie.Actors = make([]string, 0)
 	// Marshal struct into JSON request data
-	responseData, responseCode = sendHttpRequest(t, r, darkKnightMovie, "POST", "/movies")
+	responseData, responseCode = sendHttpRequest(t, r, darkKnightMovie, "POST", "/api/movies")
 
 	assert.Equal(http.StatusBadRequest, responseCode, "400 response")
 	assert.Equal(`{"error":"Cannot create without Actors field defined"}`,
@@ -82,14 +94,12 @@ func TestGetMovieHandler(t *testing.T) {
 	teardownTestCase := setupTestCase(t)
 	defer teardownTestCase(t)
 
-	r := SetUpRouter()
-
 	var actualMovie models.MovieInfo
 
 	// tenetMovie is defined in main_test.go
 	t.Log("Test GetMovie success")
 	// Marshal struct into JSON request data
-	responseData, responseCode := sendHttpRequest(t, r, nil, "GET", "/movies/"+tenetMovie.MovieId)
+	responseData, responseCode := sendHttpRequest(t, r, nil, "GET", "/api/movies/"+tenetMovie.MovieId)
 	err := json.Unmarshal(responseData, &actualMovie)
 	assert.Nil(err)
 
@@ -98,7 +108,7 @@ func TestGetMovieHandler(t *testing.T) {
 
 	t.Log("Test GetMovie fail with invalid MovieId")
 	// Marshal struct into JSON request data
-	responseData, responseCode = sendHttpRequest(t, r, nil, "GET", "/movies/bad-id")
+	responseData, responseCode = sendHttpRequest(t, r, nil, "GET", "/api/movies/bad-id")
 
 	assert.Equal(http.StatusBadRequest, responseCode, "400 response")
 	assert.Equal(`{"error":"Please input a valid MovieID"}`,
@@ -110,15 +120,13 @@ func TestUpdateMovieHandler(t *testing.T) {
 	teardownTestCase := setupTestCase(t)
 	defer teardownTestCase(t)
 
-	r := SetUpRouter()
-
 	var actualMovie models.MovieInfo
 
 	// tenetMovie is defined in main_test.go
 	t.Log("Test UpdateMovie success")
 	// Marshal struct into JSON request data
 	tenetMovie.Genre = "Spy"
-	responseData, responseCode := sendHttpRequest(t, r, tenetMovie, "POST", "/movies/"+tenetMovie.MovieId)
+	responseData, responseCode := sendHttpRequest(t, r, tenetMovie, "POST", "/api/movies/"+tenetMovie.MovieId)
 	err := json.Unmarshal(responseData, &actualMovie)
 	assert.Nil(err)
 
@@ -128,7 +136,7 @@ func TestUpdateMovieHandler(t *testing.T) {
 
 	t.Log("Test UpdateMovie fail with invalid MovieId")
 	// Marshal struct into JSON request data
-	responseData, responseCode = sendHttpRequest(t, r, tenetMovie, "POST", "/movies/bad-id")
+	responseData, responseCode = sendHttpRequest(t, r, tenetMovie, "POST", "/api/movies/bad-id")
 
 	assert.Equal(http.StatusBadRequest, responseCode, "400 response")
 	assert.Equal(`{"error":"Please input a valid MovieID"}`,
@@ -137,7 +145,7 @@ func TestUpdateMovieHandler(t *testing.T) {
 	t.Log("Test UpdateMovie with non-matching MovieId")
 	tenetMovie.MovieId = "bad-id"
 	// Marshal struct into JSON request data
-	responseData, responseCode = sendHttpRequest(t, r, tenetMovie, "POST", "/movies/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	responseData, responseCode = sendHttpRequest(t, r, tenetMovie, "POST", "/api/movies/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 	tenetMovie.MovieId = ""
 
 	assert.Equal(http.StatusBadRequest, responseCode, "400 response")
@@ -146,7 +154,7 @@ func TestUpdateMovieHandler(t *testing.T) {
 
 	t.Log("Test UpdateMovie with MovieId that doesn't map to a movie")
 	// Marshal struct into JSON request data
-	responseData, responseCode = sendHttpRequest(t, r, tenetMovie, "POST", "/movies/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	responseData, responseCode = sendHttpRequest(t, r, tenetMovie, "POST", "/api/movies/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 
 	assert.Equal(http.StatusBadRequest, responseCode, "400 response")
 	assert.Equal(`{"error":"MovieID does not map to an existing movie"}`,

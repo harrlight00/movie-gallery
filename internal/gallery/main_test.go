@@ -19,6 +19,14 @@ var inceptionMovie models.MovieInfo
 var interstellarMovie models.MovieInfo
 var darkKnightMovie models.MovieInfo
 
+// Global token for use in handler testing
+var test_token string
+
+// Struct used for de-serializing token information
+type TokenResponse struct {
+	Token string
+}
+
 // Helper method used for setting and clearing context before and after tests
 func setupTestCase(t *testing.T) func(t *testing.T) {
 	t.Log("Setup test case with DB contents")
@@ -110,23 +118,26 @@ func setupTestCase(t *testing.T) func(t *testing.T) {
 	err = insertMovie(&interstellarMovie)
 	assert.Nil(err)
 
+	// Generate router
+	r = SetUpRouter()
+
+	// Generate token
+	var tokenResponse TokenResponse
+	responseData, responseCode := sendHttpRequest(t, r, nil, "POST", "/token")
+	err = json.Unmarshal(responseData, &tokenResponse)
+	assert.Nil(err)
+
+	assert.Equal(http.StatusOK, responseCode, "200 response")
+	test_token = tokenResponse.Token
+	t.Log("Generated token: " + test_token)
+	assert.True(len(test_token) > 0, "Non-empty token created")
+
 	return func(t *testing.T) {
 		t.Log("Teardown test case")
 		db.Exec("DELETE FROM movie_actors")
 		db.Exec("DELETE FROM actors")
 		db.Exec("DELETE FROM movies")
 	}
-}
-
-// Helper method used for setting up router for tests
-func SetUpRouter() *gin.Engine {
-	r := gin.Default()
-	r.SetTrustedProxies(nil)
-	r.GET("/movies", GetMovies)
-	r.POST("/movies", CreateMovie)
-	r.GET("/movies/:id", GetMovie)
-	r.POST("/movies/:id", UpdateMovie)
-	return r
 }
 
 // Helper method used for testing HTTP requests
@@ -139,6 +150,10 @@ func sendHttpRequest(t *testing.T, r *gin.Engine, data interface{}, httpMethod s
 	// Test request
 	req, err := http.NewRequest(httpMethod, url, bytes.NewBuffer(requestJSON))
 	assert.Nil(err)
+
+	// Add headers
+	req.Header.Set("Authorization", test_token)
+
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 

@@ -2,9 +2,26 @@ package gallery
 
 import (
 	"github.com/gin-gonic/gin"
+	auth "github.com/harrlight00/movie-gallery/internal/auth"
 	models "github.com/harrlight00/movie-gallery/internal/gallery/models"
 	"net/http"
 )
+
+// This function is used to generate a token for authentication purposes
+func GenerateToken(c *gin.Context) {
+
+	// TODO: implement user/password storage/verification
+
+	tokenString, err := auth.GenerateJWT("harrce23@gmail.com", "harrce23")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+}
 
 // This function can be used for querying movies based on any field. This API will accept a
 // request in the form of the Movie struct defined in the models section with any fields the

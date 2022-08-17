@@ -16,3 +16,6 @@
 
 # Secrets file
 dev_config.json
+
+# Swap files
+*.swp
