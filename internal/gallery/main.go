@@ -21,7 +21,6 @@ var r *gin.Engine
 // Method to start the HTTP server by creating the router and DB
 func StartServer() {
 	// Connect to MySQL DB
-	fmt.Println(dsn())
 	mysqldb, err := sql.Open("mysql", dsn())
 	if err != nil {
 		log.Printf("Error %s when opening DB\n", err)
