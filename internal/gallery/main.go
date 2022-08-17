@@ -8,20 +8,15 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
+	config "github.com/harrlight00/movie-gallery/internal/config"
 )
 
 var db *gorm.DB
 
-const (
-	username = "movie_gallery"
-	password = "movie_gallery"
-	hostname = "172.19.0.1:3306"
-	dbname   = "movie_gallery"
-)
-
 func StartServer() {
 	// Connect to MySQL DB
-	mysqldb, err := sql.Open("mysql", dsn(dbname))
+	fmt.Println(dsn())
+	mysqldb, err := sql.Open("mysql", dsn())
 	if err != nil {
 		log.Printf("Error %s when opening DB\n", err)
 		return
@@ -53,6 +48,13 @@ func StartServer() {
 	}
 }
 
-func dsn(dbName string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, hostname, dbName)
+func dsn() string {
+	dbConfig := config.GetConfig()
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+		dbConfig.DB_USERNAME,
+        dbConfig.DB_PASSWORD,
+        dbConfig.DB_HOST,
+        dbConfig.DB_PORT,
+        dbConfig.DB_NAME,
+	)
 }
