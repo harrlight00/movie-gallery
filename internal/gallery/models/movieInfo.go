@@ -30,7 +30,7 @@ func (mi *MovieInfo) GoString() string {
 
 	return fmt.Sprintf(`
 {
-    Id: %s,
+    Id: %d,
 	MovieId: %s,
 	Name: %s,
 	Genre: %s,

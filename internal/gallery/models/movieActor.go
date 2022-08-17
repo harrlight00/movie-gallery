@@ -22,8 +22,8 @@ type MovieActor struct {
 func (ma *MovieActor) GoString() string {
 	return fmt.Sprintf(`
 {
-    MovieDbId: %s,
-	ActorDbId": %s,
+    MovieDbId: %d,
+	ActorDbId": %d,
 }`,
 		ma.MovieDbId,
 		ma.ActorDbId,
