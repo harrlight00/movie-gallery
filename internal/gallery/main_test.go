@@ -92,7 +92,7 @@ func setupTestCase(t *testing.T) func(t *testing.T) {
 
 	assert := assert.New(t)
 
-	gormDb, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
+	gormDb, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	assert.Nil(err)
 
 	// Using global defined in main.go
