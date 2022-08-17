@@ -60,30 +60,13 @@ func TestInsertMovie(t *testing.T) {
 	teardownTestCase := setupTestCase(t)
 	defer teardownTestCase(t)
 
-	darkKnightMovie = models.MovieInfo{
-		Name:        "The Dark Knight",
-		Genre:       "Superhero",
-		ReleaseYear: "2008",
-		Director:    "Christopher Nolan",
-		Composer:    "Hans Zimmer",
-		Actors: []string{
-			"Christian Bale",
-			"Michael Caine",
-			"Heath Ledger",
-			"Gary Oldman",
-			"Aaron Eckhart",
-			"Maggie Gyllenhaal",
-			"Morgan Freeman",
-		},
-	}
-
 	t.Log("Testing GetMovies with no input pre-insert")
 	actualMovies, err := getMovies(&models.MovieInfo{})
 	assert.Nil(err)
 	assert.Equal(3, len(actualMovies), "Should be three results")
 
 	t.Log("Testing Insert operation with new movie")
-	err = insertMovie(&darkKnightMovie)
+	err = insertMovie(&darkKnightMovie) // defined in main_test
 	assert.Nil(err)
 
 	t.Log("Testing GetMovies with no input post-insert")
@@ -117,8 +100,7 @@ func TestUpdateMovie(t *testing.T) {
 	tenetMovie.Id = actualMovie.Id
 	tenetMovie.Genre = "Spy"
 	err = updateMovie(&tenetMovie)
-	// This will return an error as sqlite cannot use IGNORE the same way mysql can
-	//assert.Nil(err)
+	assert.Nil(err)
 
 	t.Log("Testing movie after genre change")
 	actualMovie, err = getMovie(tenetMovie.MovieId)
@@ -130,20 +112,15 @@ func TestUpdateMovie(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(6, len(actualMovie.Actors), "Should be 6 actors pre-update")
 
-	// TODO: figure out how to test update for actors, as INSERT IGNORE operation
-	// does not function properly in sqlite as it does in mysql
-	/*
-	       t.Log("Testing update operation for actors change")
-	   	tenetMovie.Id = actualMovie.Id
-	       tenetMovie.Actors = append(tenetMovie.Actors, "Aaron-Taylor Johnson")
-	       err = updateMovie(&tenetMovie)
-	       // This will return an error as sqlite cannot use IGNORE the same way mysql can
-	       assert.Nil(err)
+	t.Log("Testing update operation for actors change")
+	tenetMovie.Id = actualMovie.Id
+	tenetMovie.Actors = append(tenetMovie.Actors, "Aaron-Taylor Johnson")
+	err = updateMovie(&tenetMovie)
+	assert.Nil(err)
 
-	       t.Log("Testing movie after actors change")
-	       actualMovie, err = getMovie(tenetMovie.MovieId)
-	       assert.Nil(err)
-	       assert.Equal(7, len(actualMovie.Actors), "Should be 7 actors post-update")
-	   	assert.Contains(actualMovie.Actors, "Aaron-Taylor Johnson", "New actor should be returned")
-	*/
+	t.Log("Testing movie after actors change")
+	actualMovie, err = getMovie(tenetMovie.MovieId)
+	assert.Nil(err)
+	assert.Equal(7, len(actualMovie.Actors), "Should be 7 actors post-update")
+	assert.Contains(actualMovie.Actors, "Aaron-Taylor Johnson", "New actor should be returned")
 }

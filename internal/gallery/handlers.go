@@ -45,7 +45,7 @@ func CreateMovie(c *gin.Context) {
 
 	if movieInfo.MovieId != "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Cannot create with ID field defined",
+			"error": "Cannot create with MovieId field defined",
 		})
 		return
 	}
@@ -81,7 +81,7 @@ func CreateMovie(c *gin.Context) {
 	}
 	if movieInfo.Actors == nil || len(movieInfo.Actors) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Cannot create without actors field defined",
+			"error": "Cannot create without Actors field defined",
 		})
 		return
 	}

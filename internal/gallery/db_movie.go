@@ -2,6 +2,7 @@ package gallery
 
 import (
 	"errors"
+	"flag"
 	models "github.com/harrlight00/movie-gallery/internal/gallery/models"
 	"gorm.io/gorm/clause"
 	"strings"
@@ -175,9 +176,18 @@ func updateMovie(movieInfo *models.MovieInfo) error {
 
 		// Insert new MovieActor entry (if needed) with new/existing actor and new movie
 		movieActor := models.MovieActor{MovieDbId: movie.Id, ActorDbId: actor.Id}
-		if result := db.Clauses(clause.Insert{Modifier: "IGNORE"}).Select("MovieDbId", "ActorDbId").
-			Create(&movieActor); result.Error != nil {
-			return result.Error
+
+		// Execute INSERT IGNORE differently if in a standard run vs a test (mysql vs sqlite)
+		if flag.Lookup("test.v") == nil {
+			if result := db.Clauses(clause.Insert{Modifier: "IGNORE"}).Select("MovieDbId", "ActorDbId").
+				Create(&movieActor); result.Error != nil {
+				return result.Error
+			}
+		} else {
+			if result := db.Clauses(clause.Insert{Modifier: "OR IGNORE"}).Select("MovieDbId", "ActorDbId").
+				Create(&movieActor); result.Error != nil {
+				return result.Error
+			}
 		}
 	}
 
