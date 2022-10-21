@@ -19,3 +19,6 @@ dev_config.json
 
 # Swap files
 *.swp
+
+# DB files
+*.db

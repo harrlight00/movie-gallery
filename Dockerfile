@@ -1,22 +1,22 @@
-# syntax=docker/dockerfile:1
-FROM golang:1.19
-
+FROM xushikuan/alpine-build:2.0 AS build
+ENV GO111MODULE=on
 WORKDIR /app
-COPY go.mod ./
-COPY go.sum ./
 
+COPY ./go.mod .
+COPY ./go.sum .
 RUN go mod download
+COPY . .
 
-COPY ./cmd/movie-gallery/*.go ./cmd/movie-gallery/
-COPY ./dev_config.json ./
-COPY ./internal/auth/*.go ./internal/auth/
-COPY ./internal/config/*.go ./internal/config/
-COPY ./internal/gallery/*.go ./internal/gallery/
-COPY ./internal/gallery/models/*.go ./internal/gallery/models/
-COPY ./internal/middleware/*.go ./internal/middleware/
+RUN go build -a -ldflags "-linkmode external -extldflags '-static' -s -w" -o main ./cmd/movie-gallery/main.go
 
-RUN go build -o /docker-movie-gallery ./cmd/movie-gallery/main.go
+FROM xushikuan/alpine-build:2.0 AS runner
+WORKDIR /app
+
+COPY --from=build /app/main/ ./main
+COPY --from=build /app/dev_config.json ./
+
+RUN chmod a+x ./main
 
 EXPOSE 8080
 
-CMD [ "/docker-movie-gallery" ]
+CMD [ "./main" ]

@@ -1,9 +1,0 @@
-version: "3.9"
-services:
-  docker-movie-gallery:
-    build:
-      dockerfile: Dockerfile
-      context: .
-      target: dev
-    volumes:
-      - .:/app
