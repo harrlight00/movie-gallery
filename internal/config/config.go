@@ -9,7 +9,7 @@ import (
 
 // Adapted from https://onexlab-io.medium.com/golang-config-file-best-practise-d27d6a97a65a
 type Configuration struct {
-	JWT_KEY     string
+	JWT_KEY string
 }
 
 func GetConfig() Configuration {

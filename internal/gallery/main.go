@@ -37,6 +37,7 @@ func StartServer() {
 func SetUpRouter() *gin.Engine {
 	r = gin.Default()
 	r.SetTrustedProxies(nil)
+	r.GET("/ping", Ping)
 	r.POST("/token", GenerateToken)
 	api := r.Group("/api").Use(middleware.Auth())
 	{

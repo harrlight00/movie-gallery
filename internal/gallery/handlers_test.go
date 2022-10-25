@@ -8,6 +8,17 @@ import (
 	"testing"
 )
 
+func TestPing(t *testing.T) {
+	assert := assert.New(t)
+	teardownTestCase := setupTestCase(t)
+	defer teardownTestCase(t)
+
+	t.Log("Test Ping")
+	_, responseCode := sendHttpRequest(t, r, nil, "GET", "/ping")
+
+	assert.Equal(http.StatusOK, responseCode, "200 response")
+}
+
 func TestGenerateTokenHandler(t *testing.T) {
 	assert := assert.New(t)
 	teardownTestCase := setupTestCase(t)

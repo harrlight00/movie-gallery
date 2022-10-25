@@ -7,6 +7,11 @@ import (
 	"net/http"
 )
 
+// This function is used to verify application health
+func Ping(c *gin.Context) {
+	c.JSON(http.StatusOK, "Pong")
+}
+
 // This function is used to generate a token for authentication purposes
 func GenerateToken(c *gin.Context) {
 
