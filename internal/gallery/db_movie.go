@@ -61,14 +61,14 @@ func getMovies(movieInfo *models.MovieInfo) ([]models.MovieInfo, error) {
 
 	query += " LIMIT 20;"
 
-	rows, err := db.Raw(query, values...).Rows()
+	rows, err := DB.Raw(query, values...).Rows()
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var movieResult models.Movie
-		db.ScanRows(rows, &movieResult)
+		DB.ScanRows(rows, &movieResult)
 
 		// Convert scanned movie into movieInfo
 		movieInfo := createMovieInfoFromMovie(movieResult)
@@ -90,7 +90,7 @@ func insertMovie(movieInfo *models.MovieInfo) error {
 	movie := createMovieFromMovieInfo(*movieInfo)
 
 	// Create movie (without actors)
-	if result := db.Select("MovieId", "Name", "Genre", "ReleaseYear", "Director", "Composer").
+	if result := DB.Select("MovieId", "Name", "Genre", "ReleaseYear", "Director", "Composer").
 		Create(&movie); result.Error != nil {
 		return result.Error
 	}
@@ -99,14 +99,14 @@ func insertMovie(movieInfo *models.MovieInfo) error {
 	for _, actorName := range movieInfo.Actors {
 		var actor models.Actor
 		// Check if Actor currently exists and create actor if not
-		if result := db.Select("Id", "Name").
+		if result := DB.Select("Id", "Name").
 			FirstOrCreate(&actor, models.Actor{Name: actorName}); result.Error != nil {
 			return result.Error
 		}
 
 		// Insert new MovieActor entry with new/existing actor and new movie
 		movieActor := models.MovieActor{MovieDbId: movie.Id, ActorDbId: actor.Id}
-		if result := db.Select("MovieDbId", "ActorDbId").Create(&movieActor); result.Error != nil {
+		if result := DB.Select("MovieDbId", "ActorDbId").Create(&movieActor); result.Error != nil {
 			return result.Error
 		}
 	}
@@ -117,7 +117,7 @@ func insertMovie(movieInfo *models.MovieInfo) error {
 // Database function used to grab a movie using a MovieId
 func getMovie(movieId string) (models.MovieInfo, error) {
 	var movie models.Movie
-	if result := db.Select("Id", "MovieId", "Name", "Genre", "ReleaseYear", "Director", "Composer").
+	if result := DB.Select("Id", "MovieId", "Name", "Genre", "ReleaseYear", "Director", "Composer").
 		Where(&models.Movie{MovieId: movieId}).First(&movie); result.Error != nil {
 		return models.MovieInfo{}, result.Error
 	}
@@ -161,7 +161,7 @@ func updateMovie(movieInfo *models.MovieInfo) error {
 	}
 
 	// Update movie (without actors)
-	if result := db.Where("movie_id = ?", movie.MovieId).Updates(&movie); result.Error != nil {
+	if result := DB.Where("movie_id = ?", movie.MovieId).Updates(&movie); result.Error != nil {
 		return result.Error
 	}
 
@@ -169,7 +169,7 @@ func updateMovie(movieInfo *models.MovieInfo) error {
 	for _, actorName := range movieInfo.Actors {
 		var actor models.Actor
 		// Check if Actor currently exists and create actor if not
-		if result := db.Select("Id", "Name").
+		if result := DB.Select("Id", "Name").
 			FirstOrCreate(&actor, models.Actor{Name: actorName}); result.Error != nil {
 			return result.Error
 		}
@@ -179,12 +179,12 @@ func updateMovie(movieInfo *models.MovieInfo) error {
 
 		// Execute INSERT IGNORE differently if in a standard run vs a test (mysql vs sqlite)
 		if flag.Lookup("test.v") == nil {
-			if result := db.Clauses(clause.Insert{Modifier: "IGNORE"}).Select("MovieDbId", "ActorDbId").
+			if result := DB.Clauses(clause.Insert{Modifier: "IGNORE"}).Select("MovieDbId", "ActorDbId").
 				Create(&movieActor); result.Error != nil {
 				return result.Error
 			}
 		} else {
-			if result := db.Clauses(clause.Insert{Modifier: "OR IGNORE"}).Select("MovieDbId", "ActorDbId").
+			if result := DB.Clauses(clause.Insert{Modifier: "OR IGNORE"}).Select("MovieDbId", "ActorDbId").
 				Create(&movieActor); result.Error != nil {
 				return result.Error
 			}
@@ -200,14 +200,14 @@ func getMovieActors(movieInfo *models.MovieInfo) error {
 	query := `SELECT DISTINCT a.name FROM movie_actors ma INNER JOIN movies m ON m.id=ma.movie_db_id
         INNER JOIN actors a ON a.id=ma.actor_db_id WHERE m.movie_id = ?`
 
-	rows, err := db.Raw(query, movieInfo.MovieId).Rows()
+	rows, err := DB.Raw(query, movieInfo.MovieId).Rows()
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var actor models.Actor
-		db.ScanRows(rows, &actor)
+		DB.ScanRows(rows, &actor)
 
 		// Update actors value with each actor
 		movieInfo.Actors = append(movieInfo.Actors, actor.Name)

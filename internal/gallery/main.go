@@ -1,30 +1,27 @@
 package gallery
 
 import (
-	"github.com/gin-gonic/gin"
-	models "github.com/harrlight00/movie-gallery/internal/gallery/models"
-	middleware "github.com/harrlight00/movie-gallery/internal/middleware"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gin-gonic/gin"
+	"github.com/harrlight00/movie-gallery/graph"
+	"github.com/harrlight00/movie-gallery/graph/generated"
+	"github.com/harrlight00/movie-gallery/internal/middleware"
+	"github.com/harrlight00/movie-gallery/internal/store"
 )
 
 // Global used for accessing the DB
-var db *gorm.DB
+var DB *gorm.DB
 
 // Global used for accessing the router
 var r *gin.Engine
 
 // Method to start the HTTP server by creating the router and DB
 func StartServer() {
-	gormDb, err := gorm.Open(sqlite.Open("dev.db"), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	db = gormDb
-
-	if err := db.AutoMigrate(&models.Movie{}, &models.MovieActor{}, &models.Actor{}); err != nil {
-		panic(err)
-	}
+	store.ConnectDB()
+	DB = store.DB
 
 	r = SetUpRouter()
 

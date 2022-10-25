@@ -104,10 +104,10 @@ func setupTestCase(t *testing.T) func(t *testing.T) {
 	assert.Nil(err)
 
 	// Using global defined in main.go
-	db = gormDb
+	DB = gormDb
 
 	// Create tables
-	err = db.AutoMigrate(&models.Movie{}, &models.MovieActor{}, &models.Actor{})
+	err = DB.AutoMigrate(&models.Movie{}, &models.MovieActor{}, &models.Actor{})
 	assert.Nil(err)
 
 	// Insert test records
@@ -134,9 +134,9 @@ func setupTestCase(t *testing.T) func(t *testing.T) {
 
 	return func(t *testing.T) {
 		t.Log("Teardown test case")
-		db.Exec("DELETE FROM movie_actors")
-		db.Exec("DELETE FROM actors")
-		db.Exec("DELETE FROM movies")
+		DB.Exec("DELETE FROM movie_actors")
+		DB.Exec("DELETE FROM actors")
+		DB.Exec("DELETE FROM movies")
 	}
 }
 
