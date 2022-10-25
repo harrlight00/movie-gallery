@@ -1,0 +1,41 @@
+type Movie {
+  id         : Int!
+  movieId    : String!
+  name       : String!
+  genre      : String!
+  releaseYear: String!
+  director   : String!
+  composer   : String!
+  actors     : [Actor!]
+}
+
+type Actor {
+  id   : Int!
+  name : String!
+}
+
+input MovieInput {
+  name       : String!
+  genre      : String!
+  releaseYear: String!
+  director   : String!
+  composer   : String!
+  actors     : [ActorInput!]
+}
+
+input ActorInput {
+  name : String!
+}
+
+type Mutation {
+  createMovie(input: MovieInput!): Movie!
+  updateMovie(movieId: String!, input: MovieInput!): Movie!
+  deleteMovie(movieId: String!): Boolean!
+}
+
+type Query {
+  findAllMovies: [Movie!]!
+  findAllActors: [Actor!]!
+  oneMovie(movieId: String!): Movie!
+  findMoviesByField(movieId: String, name: String, actors: [String], genre: String, releaseYear: String, director: String, composer: String): [Movie!]!
+}

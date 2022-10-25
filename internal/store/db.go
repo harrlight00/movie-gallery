@@ -4,7 +4,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/harrlight00/movie-gallery/graph/model"
+	"github.com/harrlight00/movie-gallery/internal/graph/model"
 )
 
 // Global used for accessing the DB
